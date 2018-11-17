@@ -61,12 +61,20 @@ class NeuralMap:
             print(element.id, ": ", str(element.distance(inputs)))
 
 
-mymap = NeuralMap(3,2,2)
-mymap.print_weights_as_list()
+def main():
+    print("Program started")
 
-inputs = np.array([3,4])
-mymap.print_distances_from_point(inputs)
+    mymap = NeuralMap(3,2,2)
+    mymap.print_weights_as_list()
 
-print("done")
-print(mymap.get_node_by_id(2))
-print(mymap.get_node_by_id(-2))
+    inputs = np.array([3,4])
+    mymap.print_distances_from_point(inputs)
+
+    print("done")
+    print(mymap.get_node_by_id(2))
+    print(mymap.get_node_by_id(-2))
+
+    print("Program finished")
+
+if __name__ == "__main__":
+    main()
