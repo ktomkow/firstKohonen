@@ -6,12 +6,19 @@ import matplotlib.pyplot as plt
 def main():
     print("Program started")
 
-    mymap = NeuralMap(20,4,2)
-    mymap.print()    
+    features = 2
 
-    pattern1 = np.array((0.85, 0.35))
-    pattern2 = np.array((0.2, 0.65))
-    pattern3 = np.array((0.4, 0.4))
+    mymap = NeuralMap(4,4,features)
+    #mymap.print()
+
+    pattern1 = np.array((1,0,0))
+    pattern2 = np.array((0,1,0))
+    pattern3 = np.array((0,0,1))
+
+    pattern1 = np.random.random(features)
+    pattern2 = np.random.random(features)
+    pattern3 = np.random.random(features)
+
     array = np.empty(3, dtype=object)
     array[0] = pattern1
     array[1] = pattern2
@@ -32,12 +39,15 @@ def main():
 
     nearest = mymap.get_nearest_neuron(pattern1)
     print("Nearest for pattern: " + str(pattern1) + " : " + str(nearest))
+    print("pattern1 - Distance: " + str(np.linalg.norm(pattern1 - nearest.weights)))
 
     nearest = mymap.get_nearest_neuron(pattern2)
     print("Nearest for pattern: " + str(pattern2) + " : " + str(nearest))
+    print("pattern2 - Distance: " + str(np.linalg.norm(pattern2 - nearest.weights)))
 
     nearest = mymap.get_nearest_neuron(pattern3)
-    print("Nearest for patter: " + str(pattern3) + " : " + str(nearest))
+    print("Nearest for pattern: " + str(pattern3) + " : " + str(nearest))
+    print("pattern3 - Distance: " + str(np.linalg.norm(pattern3 - nearest.weights)))
 
     print("Program finished")
 if __name__ == "__main__":
