@@ -50,8 +50,18 @@ class NeuralMap:
             print(ids)
 
 
-    def learn(self, inputs_array, cycles, learning_rate = 0.01):
+    def learn(self, inputs_array, cycles, print_status = True, learning_rate = 0.01):
+        if print_status == True:
+            s = 0
+            percentage = 0.05 # 0.01 means 1%, 0.1 means 10% etc
+            percentage_to_number = cycles * percentage
         for i in range(cycles):
+            if print_status == True:
+                if s % (percentage_to_number) == 0:
+                    percentage_completed = 100 - ((cycles - s)/cycles * 100)
+                    print(str(percentage_completed) + "% completed")
+                s = s + 1
+
             inputs = np.random.choice(inputs_array)
             winner = self.get_nearest_neuron(inputs)
             winner_position = self.get_position(winner)
@@ -61,6 +71,7 @@ class NeuralMap:
                     distance_from_winner = np.linalg.norm(neuron_position - winner_position)
                     neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
                     self.neurons[i,j].correct(inputs, learning_rate, neighbour_ratio)
+            
 
 
     def get_position(self, neuron):
