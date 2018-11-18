@@ -10,8 +10,8 @@ class NeuralMap:
         self.features_number = features
         self.neurons = self.create_map()
         # for tests:
-        self.neurons[0,0].weights = np.array((0,0))
-        self.neurons[rows - 1, cols - 1].weights = np.array((1,1))
+        #self.neurons[0,0].weights = np.array((0,0))
+        #self.neurons[rows - 1, cols - 1].weights = np.array((1,1))
 
     def create_map(self):
         k = 0
