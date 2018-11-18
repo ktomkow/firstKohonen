@@ -54,15 +54,13 @@ class NeuralMap:
         for i in range(cycles):
             inputs = np.random.choice(inputs_array)
             winner = self.get_nearest_neuron(inputs)
-            winner.correct(inputs, learning_rate)
             winner_position = self.get_position(winner)
             for i in range(self.rows):
                 for j in range(self.cols):
-                    if winner is not self.neurons[i,j]:
-                        neuron_position = np.array((i,j))
-                        distance_from_winner = np.linalg.norm(neuron_position - winner_position)
-                        neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
-                        self.neurons[i,j].correct(inputs, learning_rate, neighbour_ratio)
+                    neuron_position = np.array((i,j))
+                    distance_from_winner = np.linalg.norm(neuron_position - winner_position)
+                    neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
+                    self.neurons[i,j].correct(inputs, learning_rate, neighbour_ratio)
 
 
     def get_position(self, neuron):

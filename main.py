@@ -6,23 +6,6 @@ import matplotlib.pyplot as plt
 def main():
     print("Program started")
 
-    mymap = NeuralMap(3,3,2)
-    mymap.print_weights_as_list()
-
-    inputs = np.array([3,4])
-    mymap.print_distances_from_point(inputs)
-
-    print("*****************")
-
-    mymap.print_structure()
-
-    print("*****************")
-
-    nearest = mymap.get_nearest_neuron(inputs)
-    print("Nearest: " + str(nearest))
-
-    print("Program finished")
-
     mymap = NeuralMap(4,4,2)
     mymap.print()    
 
@@ -50,5 +33,7 @@ def main():
 
     nearest = mymap.get_nearest_neuron(pattern2)
     print("Nearest for pattern: " + str(pattern2) + " : " + str(nearest))
+
+    print("Program finished")
 if __name__ == "__main__":
     main()
