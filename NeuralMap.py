@@ -31,6 +31,13 @@ class NeuralMap:
                 return element
 
 
+    def print_structure(self):
+        for i in range(self.rows):
+            ids = ""
+            for j in range(self.cols):
+                ids = ids + " " + str(self.neurons[i,j].id)
+            print(ids)
+
     def print_distances_from_point(self, inputs):
         for element in self.neurons.flat:
             print(element.id, ": ", str(element.distance(inputs)))
