@@ -13,6 +13,8 @@ class Neuron:
     def init_weights(self):
         self.weights = np.zeros(self.features_number)
 
+    def return_weights_as_vector(self):
+        return self.weights
 
     def randomize_weights(self):
         self.weights = np.random.random(self.features_number)
