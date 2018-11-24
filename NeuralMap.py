@@ -1,6 +1,7 @@
 import numpy as np
 from Neuron import Neuron
 import threading
+import progressbar
 
 class NeuralMap:
     def __init__(self, rows, cols, features):
@@ -43,53 +44,61 @@ class NeuralMap:
             ids = ""
             for j in range(self.cols):
                 ids = ids + " " + str(self.neurons[i,j])
-            print(ids)
+            print(ids)  
 
+    def bar_create(self):
+        bar = progressbar.ProgressBar(maxval=100, \
+            widgets=[progressbar.Bar('▮', '', '', '-'), ' ', progressbar.Percentage()])
+        print("Learning in progress..")
+        bar.start()
+        return bar
 
-    def learn(self, inputs_array, cycles, print_status = True, learning_rate = 0.01):
-        if print_status == True:
-            s = 0
-            percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
-            percentage_to_number = cycles * percentage
+    def bar_update(self, bar, iter, cycles, percentage_to_number):
+        if iter % (percentage_to_number) == 0:
+                percentage_completed = 100 - ((cycles - iter)/cycles * 100)
+                bar.update(percentage_completed)
+
+    def learn(self, inputs_array, cycles, multithreading = False, learning_rate = 0.01):
+        bar = self.bar_create()
+        s = 0
+        percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
+        percentage_to_number = cycles * percentage
+        
         for i in range(cycles):
-            if print_status == True:
-                if s % (percentage_to_number) == 0:
-                    percentage_completed = 100 - ((cycles - s)/cycles * 100)
-                    print(str(percentage_completed) + "% completed")
-                s = s + 1
+            self.cycle(multithreading, cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
+            s = s + 1
+        bar.finish()
 
-            
-            inputs = np.random.choice(inputs_array)
-            winner = self.get_nearest_neuron(inputs)
-            winner_position = self.get_position(winner)
-            for i in range(self.rows):
-                self.change(i, winner_position, inputs, learning_rate)
 
-    def learn_with_threading(self, inputs_array, cycles, print_status = True, learning_rate = 0.01):
-        if print_status == True:
-            s = 0
-            percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
-            percentage_to_number = cycles * percentage
-        for i in range(cycles):
-            if print_status == True:
-                if s % (percentage_to_number) == 0:
-                    percentage_completed = 100 - ((cycles - s)/cycles * 100)
-                    print(str(percentage_completed) + "% completed")
-                s = s + 1
+    def cycle(self, multithreading, cycles, inputs_array, learning_rate, bar, percentage_to_number, s):
+        if multithreading:
+            self.cycle_no_threading(cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
+        else:
+            self.cycle_with_threading(cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
 
-            inputs = np.random.choice(inputs_array)
-            winner = self.get_nearest_neuron(inputs)
-            winner_position = self.get_position(winner)
 
-            threads = []
-            for i in range(self.rows):
-                t = threading.Thread(target=self.change, args=(i,winner_position,inputs, learning_rate))
-                threads.append(t)
-                t.start()
-                    
-            for i in range(self.rows):
-                threads[i].join()
+    def cycle_no_threading(self, cycles, inputs_array, learning_rate, bar, percentage_to_number, s):
+        self.bar_update(bar, s, cycles, percentage_to_number)
+        inputs = np.random.choice(inputs_array)
+        winner = self.get_nearest_neuron(inputs)
+        winner_position = self.get_position(winner)
+        for i in range(self.rows):
+            self.change(i, winner_position, inputs, learning_rate)
 
+    def cycle_with_threading(self, cycles, inputs_array, learning_rate, bar, percentage_to_number, s):
+        self.bar_update(bar, s, cycles, percentage_to_number)
+        inputs = np.random.choice(inputs_array)
+        winner = self.get_nearest_neuron(inputs)
+        winner_position = self.get_position(winner)
+
+        threads = []
+        for i in range(self.rows):
+            t = threading.Thread(target=self.change, args=(i,winner_position,inputs, learning_rate))
+            threads.append(t)
+            t.start()
+                
+        for i in range(self.rows):
+            threads[i].join()
 
     def change(self, row, winner_position, inputs, learning_rate):
         for j in range(self.cols):

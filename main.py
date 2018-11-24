@@ -1,74 +1,39 @@
 from NeuralMap import NeuralMap
 from Neuron import Neuron
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image
 from timeit import default_timer as timer
+import progressbar
+
 
 def main():
     print("Program started")
 
     features = 3
-    elements = 100
+    elements = 40
 
-    height = 60
-    width = 60
+    height = 50
+    width = 50
     cycles = 100
 
-    learn_with_threading = False
+    multithreading = True
+    learning_rate = 0.1 # 0.01 as default
 
     mymap = NeuralMap(height,width,features)
-    #mymap.print()
 
     # pattern1 = np.array((1,0,0))
-    # pattern2 = np.array((0,1,0))
-    # pattern3 = np.array((0,0,1))
-    # pattern4 = np.array((1,1,1))
-    # pattern5 = np.array((0,0,0))
-
-    # array = np.empty(5, dtype=object)
     # array[0] = pattern1
-    # array[1] = pattern2
-    # array[2] = pattern3
-    # array[3] = pattern4
-    # array[4] = pattern5
 
     array = np.empty(elements, dtype=object)
     for i in range(elements):
         array[i] = np.random.random(features)
 
-    print()
-    print("Patterns: " + str(array))
-    print()
-
     start = timer()
 
-    if learn_with_threading:
-        mymap.learn_with_threading(array, cycles)
-    else: 
-        mymap.learn(array, cycles)
-
+    mymap.learn(array, cycles, multithreading, learning_rate)
 
     end = timer()
     print("Learning time: %s seconds" %(end - start))
-
-    # mymap.print()
-
-    # print("*****************")
-    # print("Results:")
-    # print("*****************")
-
-    # nearest = mymap.get_nearest_neuron(pattern1)
-    # print("Nearest for pattern: " + str(pattern1) + " : " + str(nearest))
-    # print("pattern1 - Distance: " + str(np.linalg.norm(pattern1 - nearest.weights)))
-
-    # nearest = mymap.get_nearest_neuron(pattern2)
-    # print("Nearest for pattern: " + str(pattern2) + " : " + str(nearest))
-    # print("pattern2 - Distance: " + str(np.linalg.norm(pattern2 - nearest.weights)))
-
-    # nearest = mymap.get_nearest_neuron(pattern3)
-    # print("Nearest for pattern: " + str(pattern3) + " : " + str(nearest))
-    # print("pattern3 - Distance: " + str(np.linalg.norm(pattern3 - nearest.weights)))
 
     height = mymap.rows
     width = mymap.cols
