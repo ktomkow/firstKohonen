@@ -1,7 +1,6 @@
 import numpy as np
 from Neuron import Neuron
-import matplotlib.pyplot as plt
-
+import threading
 
 class NeuralMap:
     def __init__(self, rows, cols, features):
@@ -9,9 +8,6 @@ class NeuralMap:
         self.cols = cols
         self.features_number = features
         self.neurons = self.create_map()
-        # for tests:
-        #self.neurons[0,0].weights = np.array((0,0))
-        #self.neurons[rows - 1, cols - 1].weights = np.array((1,1))
 
     def create_map(self):
         k = 0
@@ -53,7 +49,26 @@ class NeuralMap:
     def learn(self, inputs_array, cycles, print_status = True, learning_rate = 0.01):
         if print_status == True:
             s = 0
-            percentage = 0.05 # 0.01 means 1%, 0.1 means 10% etc
+            percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
+            percentage_to_number = cycles * percentage
+        for i in range(cycles):
+            if print_status == True:
+                if s % (percentage_to_number) == 0:
+                    percentage_completed = 100 - ((cycles - s)/cycles * 100)
+                    print(str(percentage_completed) + "% completed")
+                s = s + 1
+
+            
+            inputs = np.random.choice(inputs_array)
+            winner = self.get_nearest_neuron(inputs)
+            winner_position = self.get_position(winner)
+            for i in range(self.rows):
+                self.change(i, winner_position, inputs, learning_rate)
+
+    def learn_with_threading(self, inputs_array, cycles, print_status = True, learning_rate = 0.01):
+        if print_status == True:
+            s = 0
+            percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
             percentage_to_number = cycles * percentage
         for i in range(cycles):
             if print_status == True:
@@ -65,13 +80,23 @@ class NeuralMap:
             inputs = np.random.choice(inputs_array)
             winner = self.get_nearest_neuron(inputs)
             winner_position = self.get_position(winner)
+
+            threads = []
             for i in range(self.rows):
-                for j in range(self.cols):
-                    neuron_position = np.array((i,j))
-                    distance_from_winner = np.linalg.norm(neuron_position - winner_position)
-                    neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
-                    self.neurons[i,j].correct(inputs, learning_rate, neighbour_ratio)
-            
+                t = threading.Thread(target=self.change, args=(i,winner_position,inputs, learning_rate))
+                threads.append(t)
+                t.start()
+                    
+            for i in range(self.rows):
+                threads[i].join()
+
+
+    def change(self, row, winner_position, inputs, learning_rate):
+        for j in range(self.cols):
+            neuron_position = np.array((row,j))
+            distance_from_winner = np.linalg.norm(neuron_position - winner_position)
+            neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
+            self.neurons[row,j].correct(inputs, learning_rate, neighbour_ratio)
 
 
     def get_position(self, neuron):
