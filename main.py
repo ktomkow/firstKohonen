@@ -5,19 +5,28 @@ import numpy as np
 from PIL import Image
 from timeit import default_timer as timer
 import progressbar
-import numba
+
+
 
 def main():
     print("Program started")
-    rows = 10
-    cols = 10
+    rows = 900
+    cols = 1600
     features = 3
     start = timer()
 
     newmap = NewNeuralMap(rows, cols, features)
 
     end = timer()
-    print("Crearing new map time: %s seconds" %(end - start))
+
+    print("Creating new map time: %s seconds" %(end - start))
+
+    start = timer()
+    newmap.print()
+    end = timer()
+
+    print("Printing new map time: %s seconds" %(end - start))
+
 
 def main1():
     print("Program started")
