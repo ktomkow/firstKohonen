@@ -12,44 +12,23 @@ def main():
     rows = 24
     cols = 24
     features = 3
-    start = timer()
-    cycles = 100
+    cycles = 1000
     learning_rate = 0.9
 
     elements = 4
 
     inputs = np.random.random((elements,features))
-    # print(inputs)
 
-    newmap1 = NewNeuralMap(rows, cols, features)
-    newmap2 = NewNeuralMap(rows, cols, features)
-    # newmap.print_weights()
-    end = timer()
-
-    print("Creating new map time: %s seconds" %(end - start))
+    newmap = NewNeuralMap(rows, cols, features)
 
     start = timer()
-    newmap1.learn(inputs, cycles, learning_rate)
+    newmap.learn(inputs, cycles, learning_rate)
     end = timer()
-    print("Learning time ONETHREAD: %s seconds" %(end - start))
+    print("Learning time: %s seconds" %(end - start))
 
     start = timer()
-    newmap2.learn_mt(inputs, cycles, learning_rate)
-    threads = []
-    how_many_times = 12
-    for i in range(how_many_times):
-        t = threading.Thread(target=learn, args=(newmap2, inputs, cycles, learning_rate))
-        threads.append(t)
-        t.start()
-            
-    for i in range(how_many_times):
-        threads[i].join()
-    end = timer()
-    print("Learning time MULTITHREAD: %s seconds" %(end - start))
+    newmap.print()
 
-    start = timer()
-    newmap1.print()
-    newmap2.print()
     end = timer()
 
     print("Printing new map time: %s seconds" %(end - start))
