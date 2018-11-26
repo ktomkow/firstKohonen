@@ -10,13 +10,13 @@ def main():
     print("Program started")
 
     features = 3
-    elements = 40
+    elements = 500
 
-    height = 50
-    width = 50
-    cycles = 100
+    height = 100
+    width = 100
+    cycles = 1000
 
-    multithreading = True
+    multithreading = True # True - faster
     learning_rate = 0.1 # 0.01 as default
 
     mymap = NeuralMap(height,width,features)
@@ -35,27 +35,29 @@ def main():
     end = timer()
     print("Learning time: %s seconds" %(end - start))
 
-    height = mymap.rows
-    width = mymap.cols
-
-    def convert_map_to_array(input_data):
-        array = np.zeros((height, width, 3), dtype=np.uint8)
-        for i in range(height):
-            for j in range(width):
-                if features == 3: 
-                    array[i,j] = input_data.neurons[i][j].return_weights_as_vector() * 255
-                else:
-                    mean = np.mean(input_data.neurons[i][j].return_weights_as_vector())
-                    array[i,j] = np.array((mean, mean, mean)) * 255
-        return array
-
-
-    img = convert_map_to_array(mymap)
-
-    img = Image.fromarray(img, 'RGB')
-    # img.save('my.png')
-    img.show()
+    print_map(mymap)
 
     print("Program finished")
+
+def convert_map_to_array(mymap):
+    height = mymap.rows
+    width = mymap.cols
+    features = mymap.features_number
+    array = np.zeros((height, width, 3), dtype=np.uint8)
+    for i in range(height):
+        for j in range(width):
+            if features == 3: 
+                array[i,j] = mymap.neurons[i][j].return_weights_as_vector() * 255
+            else:
+                mean = np.mean(mymap.neurons[i][j].return_weights_as_vector())
+                array[i,j] = np.array((mean, mean, mean)) * 255
+    return array
+
+def print_map(mymap):
+    img = convert_map_to_array(mymap)
+    img = Image.fromarray(img, 'RGB')
+    img.save('my.png')
+    img.show()
+
 if __name__ == "__main__":
     main()
