@@ -63,15 +63,8 @@ class NeuralMap:
         s = 0
         percentage = 0.01 # 0.01 means 1%, 0.1 means 10% etc
         percentage_to_number = cycles * percentage
-        fast_learning_percent = 0.1 # 0.01 means 1%, 0.1 means 10% etc
-        fast_learning_number = (int)(cycles - cycles * fast_learning_percent)
-        fast_learning_rate = 10
-
-        for i in range((int)(fast_learning_number)):
-            self.cycle(multithreading, cycles, inputs_array, learning_rate * fast_learning_rate, bar, percentage_to_number, s)
-            s = s + 1
         
-        for i in range((int)(cycles - fast_learning_number)):
+        for i in range(cycles):
             self.cycle(multithreading, cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
             s = s + 1
         bar.finish()

@@ -10,16 +10,23 @@ def main():
     print("Program started")
 
     features = 3
-    elements = 500
+    elements = 40
 
-    height = 100
-    width = 100
-    cycles = 1000
+    height = 40
+    width = 40
+    cycles1 = 100
+    cycles2 = 100
+    cycles3 = 600
+    cycles4 = 800
 
     multithreading = False
-    learning_rate = 0.1 # 0.01 as default
+    learning_rate1 = 5 # 0.01 as default
+    learning_rate2 = 1.5 # 0.01 as default
+    learning_rate3 = 0.95 # 0.01 as default
+    learning_rate4 = 0.55 # 0.01 as default
 
     mymap = NeuralMap(height,width,features)
+    print_map(mymap)
 
     # pattern1 = np.array((1,0,0))
     # array[0] = pattern1
@@ -30,12 +37,21 @@ def main():
 
     start = timer()
 
-    mymap.learn(array, cycles, multithreading, learning_rate)
+    print("Part 1")
+    mymap.learn(array, cycles1, multithreading, learning_rate1)
+    print_map(mymap)
+    print("Part 2")
+    mymap.learn(array, cycles2, multithreading, learning_rate2)
+    print_map(mymap)
+    print("Part 3")
+    mymap.learn(array, cycles3, multithreading, learning_rate3)
+    print_map(mymap)
+    print("Part 4")
+    mymap.learn(array, cycles4, multithreading, learning_rate4)
+    print_map(mymap)
 
     end = timer()
     print("Learning time: %s seconds" %(end - start))
-
-    print_map(mymap)
 
     print("Program finished")
 
