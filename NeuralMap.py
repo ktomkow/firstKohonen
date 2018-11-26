@@ -79,9 +79,9 @@ class NeuralMap:
 
     def cycle(self, multithreading, cycles, inputs_array, learning_rate, bar, percentage_to_number, s):
         if multithreading:
-            self.cycle_no_threading(cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
-        else:
             self.cycle_with_threading(cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
+        else:
+            self.cycle_no_threading(cycles, inputs_array, learning_rate, bar, percentage_to_number, s)
 
 
     def cycle_no_threading(self, cycles, inputs_array, learning_rate, bar, percentage_to_number, s):

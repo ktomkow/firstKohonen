@@ -16,7 +16,7 @@ def main():
     width = 100
     cycles = 1000
 
-    multithreading = True # True - faster
+    multithreading = False # True - faster
     learning_rate = 0.1 # 0.01 as default
 
     mymap = NeuralMap(height,width,features)
