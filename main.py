@@ -8,11 +8,11 @@ import progressbar
 
 def main():
     print("Program started")
-    rows = 16
-    cols = 16
+    rows = 60
+    cols = 60
     features = 3
     start = timer()
-    cycles = 1000
+    cycles = 100
     learning_rate = 1.5
 
     elements = 4
