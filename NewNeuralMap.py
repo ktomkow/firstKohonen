@@ -3,6 +3,7 @@ import progressbar
 from timeit import default_timer as timer
 from PIL import Image
 from random import randint
+import threading
 
 class NewNeuralMap:
     def __init__(self, rows, cols, features):
@@ -18,6 +19,56 @@ class NewNeuralMap:
     def create_map(self):
         array = np.random.random((self.rows, self.cols, self.features_number))
         return array
+
+    def learn_mt(self, inputs_array, cycles, learning_rate = 0.01):
+        bar = self.bar_create()
+        bar.update(0)
+        cycle_number = 0
+        learning_rate = self.check_learning_rate(learning_rate)
+        for i in range(cycles):
+            percentage_done = (i/(cycles-1))*100
+            bar.update(percentage_done)
+            input_vector = inputs_array[randint(0, inputs_array.shape[0] - 1),:]
+            winner_position = self.get_winner_neuron(input_vector)
+
+            start = timer()
+
+            threads = []
+            number_of_threads = 4
+            rows_in_thread = (int)(self.rows/number_of_threads)
+            first_row = 0
+            last_row = 0
+            for i in range(number_of_threads):
+                first_row = last_row
+                last_row = first_row + rows_in_thread
+                if i == number_of_threads - 1:
+                    last_row = self.rows
+                
+                t = threading.Thread(target=self.cycles, args=(first_row, last_row, winner_position, input_vector, learning_rate))
+                threads.append(t)
+                t.start()
+                
+            for i in range(number_of_threads):
+                threads[i].join()
+
+            end = timer()
+            self.changin_time +=  end - start
+
+        print()
+        print("Getting winner time: %s seconds" %(self.getting_winner_time))    
+        print("Changing weights time: %s seconds" %(self.changin_time))
+
+
+    def cycles(self, first_row, last_row, winner_position, input_vector, learning_rate):
+        j = first_row
+        while j < last_row:
+            for k in range(self.cols):
+                neuron_position = np.array((j,k))
+                distance_from_winner = np.linalg.norm(neuron_position - winner_position)
+                # print("Distance from winner: %s" % distance_from_winner)
+                neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
+                self.neurons[j,k] = self.neurons[j,k] + learning_rate * neighbour_ratio * (input_vector - self.neurons[j,k])
+            j += 1
 
     def learn(self, inputs_array, cycles, learning_rate = 0.01):
         bar = self.bar_create()
@@ -35,27 +86,29 @@ class NewNeuralMap:
                 for k in range(self.cols):
                     neuron_position = np.array((j,k))
                     distance_from_winner = np.linalg.norm(neuron_position - winner_position)
+                    # print("Distance from winner: %s" % distance_from_winner)
                     neighbour_ratio = np.exp(-0.693147180559945 * distance_from_winner)
                     self.neurons[j,k] = self.neurons[j,k] + learning_rate * neighbour_ratio * (input_vector - self.neurons[j,k])
             end = timer()
+            self.changin_time +=  end - start
 
-        print("Getting winer time: %s seconds" %(self.getting_winner_time))    
-        print("Changing weights time: %s seconds" %(end - start))                     
+        print()
+        print("Getting winner time: %s seconds" %(self.getting_winner_time))    
+        print("Changing weights time: %s seconds" %(self.changin_time))                     
 
     def get_winner_neuron(self, input_vector):
         start = timer()
         col = 0
         row = 0
-        position = np.array
         minimum = 999999
         for i in range(self.rows):
             for j in range(self.cols):
-                distance = np.linalg.norm(self.neurons[i,j] - input_vector)
-                # print("%s %s --%s--> %s" % (np.array((i,j)), self.neurons[i,j], distance, input_vector))
-                if distance < minimum:
+                difference = np.linalg.norm(self.neurons[i,j] - input_vector)
+                # print("%s %s --%s--> %s" % (np.array((i,j)), self.neurons[i,j], difference, input_vector))
+                if difference < minimum:
                     row = i
                     col = j
-                    minimum = distance
+                    minimum = difference
 
         end = timer()
         self.getting_winner_time += end-start

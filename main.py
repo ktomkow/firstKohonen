@@ -6,36 +6,40 @@ from PIL import Image
 from timeit import default_timer as timer
 import progressbar
 
-
-
 def main():
     print("Program started")
-    rows = 40
-    cols = 40
+    rows = 16
+    cols = 16
     features = 3
     start = timer()
     cycles = 1000
-    learning_rate = 0.5
+    learning_rate = 1.5
 
-    elements = 40
+    elements = 4
 
     inputs = np.random.random((elements,features))
     # print(inputs)
 
-    newmap = NewNeuralMap(rows, cols, features)
+    newmap1 = NewNeuralMap(rows, cols, features)
+    newmap2 = NewNeuralMap(rows, cols, features)
     # newmap.print_weights()
     end = timer()
 
     print("Creating new map time: %s seconds" %(end - start))
 
-    
     start = timer()
-    newmap.learn(inputs, cycles, learning_rate)
+    newmap1.learn(inputs, cycles, learning_rate)
     end = timer()
-    print("Learning time: %s seconds" %(end - start))
+    print("Learning time ONETHREAD: %s seconds" %(end - start))
 
     start = timer()
-    newmap.print()
+    newmap2.learn_mt(inputs, cycles, learning_rate)
+    end = timer()
+    print("Learning time MULTITHREAD: %s seconds" %(end - start))
+
+    start = timer()
+    newmap1.print()
+    newmap2.print()
     end = timer()
 
     print("Printing new map time: %s seconds" %(end - start))
@@ -49,16 +53,11 @@ def main1():
 
     height = 40
     width = 40
-    cycles1 = 1000
-    cycles2 = 0
-    cycles3 = 0
-    cycles4 = 0
+    cycles = 1000
 
     multithreading = False
-    learning_rate1 = 0.5 # 0.01 as default
-    learning_rate2 = 1.5 # 0.01 as default
-    learning_rate3 = 0.95 # 0.01 as default
-    learning_rate4 = 0.55 # 0.01 as default
+    learning_rate = 0.5 # 0.01 as default
+
 
     mymap = NeuralMap(height,width,features)
     print_map(mymap)
@@ -72,18 +71,7 @@ def main1():
 
     start = timer()
 
-    print("Part 1")
-    mymap.learn(array, cycles1, multithreading, learning_rate1)
-    # print_map(mymap)
-    # print("Part 2")
-    # mymap.learn(array, cycles2, multithreading, learning_rate2)
-    # print_map(mymap)
-    # print("Part 3")
-    # mymap.learn(array, cycles3, multithreading, learning_rate3)
-    # print_map(mymap)
-    # print("Part 4")
-    # mymap.learn(array, cycles4, multithreading, learning_rate4)
-    # print_map(mymap)
+    mymap.learn(array, cycles, multithreading, learning_rate)
 
     end = timer()
     print("Learning time: %s seconds" %(end - start))
@@ -107,7 +95,7 @@ def convert_map_to_array(mymap):
 def print_map(mymap):
     img = convert_map_to_array(mymap)
     img = Image.fromarray(img, 'RGB')
-    img.save('my.png')
+    # img.save('my.png')
     img.show()
 
 if __name__ == "__main__":
