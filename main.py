@@ -1,12 +1,25 @@
 from NeuralMap import NeuralMap
 from Neuron import Neuron
+from NewNeuralMap import NewNeuralMap
 import numpy as np
 from PIL import Image
 from timeit import default_timer as timer
 import progressbar
-
+import numba
 
 def main():
+    print("Program started")
+    rows = 10
+    cols = 10
+    features = 3
+    start = timer()
+
+    newmap = NewNeuralMap(rows, cols, features)
+
+    end = timer()
+    print("Crearing new map time: %s seconds" %(end - start))
+
+def main1():
     print("Program started")
 
     features = 3
