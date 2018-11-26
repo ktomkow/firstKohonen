@@ -5,15 +5,16 @@ import numpy as np
 from PIL import Image
 from timeit import default_timer as timer
 import progressbar
+import threading
 
 def main():
     print("Program started")
-    rows = 60
-    cols = 60
+    rows = 24
+    cols = 24
     features = 3
     start = timer()
     cycles = 100
-    learning_rate = 1.5
+    learning_rate = 0.9
 
     elements = 4
 
@@ -34,6 +35,15 @@ def main():
 
     start = timer()
     newmap2.learn_mt(inputs, cycles, learning_rate)
+    threads = []
+    how_many_times = 12
+    for i in range(how_many_times):
+        t = threading.Thread(target=learn, args=(newmap2, inputs, cycles, learning_rate))
+        threads.append(t)
+        t.start()
+            
+    for i in range(how_many_times):
+        threads[i].join()
     end = timer()
     print("Learning time MULTITHREAD: %s seconds" %(end - start))
 
@@ -44,6 +54,8 @@ def main():
 
     print("Printing new map time: %s seconds" %(end - start))
 
+def learn(net,inputs, cycles, learning_rate):
+    net.learn_mt(inputs, cycles, learning_rate)
 
 def main1():
     print("Program started")
