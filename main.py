@@ -14,14 +14,12 @@ def main():
     cols = 30
     features = 3
     number_of_classes = 4
-
-    elements = 10
+    elements = 25
 
     inputs = np.random.random((elements,features))
 
     newmap = NewNeuralMap(rows, cols, features)
-    frozen = jsonpickle.encode(newmap)
-    newmap = jsonpickle.decode(frozen)
+
     start = timer()
     print("Learning..")
     cycles = 1000
@@ -37,9 +35,8 @@ def main():
     end = timer()
 
     print("Printing new map time: %s seconds" %(end - start))
+    newmap.safe_to_file()
 
-def learn(net,inputs, cycles, learning_rate):
-    net.learn_mt(inputs, cycles, learning_rate)
 
 def main1():
     print("Program started")

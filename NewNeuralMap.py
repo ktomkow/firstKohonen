@@ -4,6 +4,8 @@ from timeit import default_timer as timer
 from PIL import Image
 from random import randint
 import threading
+import jsonpickle
+
 
 class NewNeuralMap:
     def __init__(self, rows, cols, features):
@@ -23,6 +25,19 @@ class NewNeuralMap:
         return array
 
 
+    def safe_to_file(self, filename = "map.txt"):
+        frozen = jsonpickle.encode(self)
+        f = open(filename, "w")
+        f.write(frozen)
+
+
+    @staticmethod
+    def read_from_file(filename = "map.txt"):
+        f = open(filename, "r")
+        frozen = f.read()
+        return jsonpickle.decode(frozen)
+
+    
     def create_classes_array(self):
         array = np.zeros((self.rows, self.cols)) - 1
         return array
