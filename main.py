@@ -6,23 +6,28 @@ from PIL import Image
 from timeit import default_timer as timer
 import progressbar
 import threading
+import jsonpickle
 
 def main():
     print("Program started")
-    rows = 24
-    cols = 24
+    rows = 30
+    cols = 30
     features = 3
-    cycles = 1000
-    learning_rate = 0.9
+    number_of_classes = 4
 
-    elements = 4
+    elements = 10
 
     inputs = np.random.random((elements,features))
 
     newmap = NewNeuralMap(rows, cols, features)
-
+    frozen = jsonpickle.encode(newmap)
+    newmap = jsonpickle.decode(frozen)
     start = timer()
+    print("Learning..")
+    cycles = 1000
+    learning_rate = 0.5
     newmap.learn(inputs, cycles, learning_rate)
+
     end = timer()
     print("Learning time: %s seconds" %(end - start))
 

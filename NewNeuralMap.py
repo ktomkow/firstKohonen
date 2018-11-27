@@ -10,7 +10,9 @@ class NewNeuralMap:
         self.rows = rows
         self.cols = cols
         self.features_number = features
+        self.number_of_classes = 0
         self.neurons = self.create_map()
+        self.classes = self.create_classes_array()
         self.default_learning_rate = 0.01
         self.getting_winner_time = 0
         self.changin_time = 0
@@ -19,6 +21,18 @@ class NewNeuralMap:
     def create_map(self):
         array = np.random.random((self.rows, self.cols, self.features_number))
         return array
+
+
+    def create_classes_array(self):
+        array = np.zeros((self.rows, self.cols)) - 1
+        return array
+
+
+    def build_classificator(self, number_of_classes):
+        self.number_of_classes = number_of_classes
+        centroids = np.array((self.number_of_classes, 2))
+
+
 
     def learn_mt(self, inputs_array, cycles, learning_rate = 0.01):
         bar = self.bar_create()
@@ -71,10 +85,10 @@ class NewNeuralMap:
             j += 1
 
     def learn(self, inputs_array, cycles, learning_rate = 0.01):
+        learning_rate = self.check_learning_rate(learning_rate)
+        print("Learning in %s cycles with %s learning rate" % (cycles, learning_rate))
         bar = self.bar_create()
         bar.update(0)
-        cycle_number = 0
-        learning_rate = self.check_learning_rate(learning_rate)
         for i in range(cycles):
             percentage_done = (i/(cycles-1))*100
             bar.update(percentage_done)
