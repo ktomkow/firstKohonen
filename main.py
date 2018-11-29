@@ -11,12 +11,23 @@ import ImageProcessor as ip
 
 def main():
     print("Program started")
-    filename = "stop2.ppm"
-    vector = ip.get_normalized_vector(filename)
-    print(vector)
 
-    rows = 50
-    cols = 50
+    inputs = np.ones((1024))
+    i = 0
+    while i < 4:
+        filename = (str(i+1)) + ".ppm"
+        vector = ip.get_normalized_vector(filename)
+        inputs = np.vstack((inputs, vector))
+        if i == 0:
+            inputs = inputs[1:]
+        i += 1
+
+    print(inputs)
+
+    #exit()
+
+    rows = 25
+    cols = 25
     features = 3
     number_of_classes = 4
     elements = 4
@@ -27,7 +38,7 @@ def main():
 
     start = timer()
     print("Learning..")
-    cycles = 1000
+    cycles = 4000
     learning_rate = 0.5
     newmap.learn(inputs, cycles, learning_rate)
 
