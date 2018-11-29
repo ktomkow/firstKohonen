@@ -7,24 +7,15 @@ from timeit import default_timer as timer
 import progressbar
 import threading
 import jsonpickle
-import ImageProcessor as ip
+import InputsGetter as ig
 
 def main():
     print("Program started")
 
-    inputs = np.ones((1024))
-    i = 0
-    while i < 4:
-        filename = (str(i+1)) + ".ppm"
-        vector = ip.get_normalized_vector(filename)
-        inputs = np.vstack((inputs, vector))
-        if i == 0:
-            inputs = inputs[1:]
-        i += 1
-
+    inputs = ig.get_all_images_vectors()
     print(inputs)
 
-    #exit()
+    exit()
 
     rows = 25
     cols = 25

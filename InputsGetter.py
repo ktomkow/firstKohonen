@@ -1,18 +1,16 @@
 import ImageProcessor as ip
 import numpy as np
 import os
-from timeit import default_timer as timer
-path = 'D:\Pobrane\SIECI_Baza_Znakow\GTSRB\Final_Training'
 
-inputs = np.ones((1024))
+def get_all_images_vectors():
 
-start = timer()
+    path = './Images'
+    inputs = np.ones((1024)) # to initialize array
 
-for root, directories, filenames in os.walk(path):
-    for filename in filenames: 
-        vector = ip.get_normalized_vector((os.path.join(root,filename)))
-        inputs = np.vstack((inputs, vector))
+    for root, directories, filenames in os.walk(path):
+        for filename in filenames: 
+            vector = ip.get_normalized_vector((os.path.join(root,filename)))
+            inputs = np.vstack((inputs, vector))
 
-end = timer()
-
-print("Loading images time: %s seconds" %(end - start))
+    inputs = inputs[1:] # to remove the first row
+    return inputs
