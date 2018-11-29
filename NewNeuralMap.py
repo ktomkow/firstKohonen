@@ -25,14 +25,14 @@ class NewNeuralMap:
         return array
 
 
-    def safe_to_file(self, filename = "map.txt"):
+    def safe_to_file(self, filename = "my_map.txt"):
         frozen = jsonpickle.encode(self)
         f = open(filename, "w")
         f.write(frozen)
 
 
     @staticmethod
-    def read_from_file(filename = "map.txt"):
+    def read_from_file(filename = "my_map.txt"):
         f = open(filename, "r")
         frozen = f.read()
         return jsonpickle.decode(frozen)
