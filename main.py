@@ -7,14 +7,19 @@ from timeit import default_timer as timer
 import progressbar
 import threading
 import jsonpickle
+import ImageProcessor as ip
 
 def main():
     print("Program started")
-    rows = 30
-    cols = 30
+    filename = "stop2.ppm"
+    vector = ip.get_normalized_vector(filename)
+    print(vector)
+
+    rows = 50
+    cols = 50
     features = 3
     number_of_classes = 4
-    elements = 25
+    elements = 4
 
     inputs = np.random.random((elements,features))
 
