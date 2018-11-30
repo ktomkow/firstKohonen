@@ -9,9 +9,13 @@ from matplotlib import pyplot as plt
 def main():
     print("Program started")
 
-    # neural_network_test()
+    path = './Images/**/*.ppm'
+    inputs_mt = ig.get_all_images_vectors_mt(path, 44)
+    ig.save_inputs_to_json(inputs_mt)
+    print(len(inputs_mt))
 
-    # images_loading_test(4,128)
+    inputs = ig.load_inputs_from_json()
+    print(len(inputs))
 
     print("Program finished")
 

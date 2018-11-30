@@ -4,6 +4,21 @@ import os
 import progressbar
 from glob import glob
 import threading
+import jsonpickle
+
+def save_inputs_to_json(inputs):
+    filename = "first_inputs.txt"
+    frozen = jsonpickle.encode(inputs)
+    f = open(filename, "w")
+    f.write(frozen)
+
+
+def load_inputs_from_json():
+    filename = "first_inputs.txt"
+    f = open(filename, "r")
+    frozen = f.read()
+    return jsonpickle.decode(frozen)
+    
 
 def get_all_images_vectors(path = './Images/**/*.ppm'):
     print("Loading images..")
