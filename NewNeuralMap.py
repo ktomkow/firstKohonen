@@ -166,7 +166,7 @@ class NewNeuralMap:
     def print(self):
         array = self.convert_to_print()
         img = Image.fromarray(array, 'RGB')
-        img = img.resize((600,600))
+        img = img.resize((300,300))
         img.show()
 
     def print_weights(self):
