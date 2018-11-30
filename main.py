@@ -1,20 +1,28 @@
-from NeuralMap import NeuralMap
 from Neuron import Neuron
 from NewNeuralMap import NewNeuralMap
 import numpy as np
 from PIL import Image
 from timeit import default_timer as timer
-import progressbar
-import threading
-import jsonpickle
+import InputsGetter as ig
+from matplotlib import pyplot as plt
 
 def main():
     print("Program started")
-    rows = 30
-    cols = 30
+
+    # neural_network_test()
+
+    # images_loading_test(4,128)
+
+    print("Program finished")
+
+
+def neural_network_test():
+    rows = 20
+    cols = 20
     features = 3
-    number_of_classes = 4
-    elements = 25
+    elements = 12
+    cycles = 1000
+    learning_rate = 0.3
 
     inputs = np.random.random((elements,features))
 
@@ -22,10 +30,7 @@ def main():
 
     start = timer()
     print("Learning..")
-    cycles = 1000
-    learning_rate = 0.5
     newmap.learn(inputs, cycles, learning_rate)
-
     end = timer()
     print("Learning time: %s seconds" %(end - start))
 
@@ -38,58 +43,38 @@ def main():
     newmap.safe_to_file()
 
 
-def main1():
-    print("Program started")
+def images_loading_test(min_threads = 4, max_threads = 1024):
+    path = './Images/**/*.ppm'
+    x = []
+    y = []
+    
+    i = min_threads
+    while i <= max_threads:
+        print("%s threads running.." % (i))
+        start = timer()
+        inputs_mt = ig.get_all_images_vectors_mt(path, i)
+        end = timer()
+        
+        x.append(i)
+        y.append(end-start)
+        i += 1
 
-    features = 3
-    elements = 40
 
-    height = 40
-    width = 40
-    cycles = 1000
+    min_time = min(y)
+    optimum_number_of_threads = x[y.index(min(y))]
 
-    multithreading = False
-    learning_rate = 0.5 # 0.01 as default
+    print("************************")
+    print("Best result:")
+    print("%s threads " % optimum_number_of_threads)
+    print("%s seconds" % min_time)
+    print("************************")
 
-
-    mymap = NeuralMap(height,width,features)
-    print_map(mymap)
-
-    # pattern1 = np.array((1,0,0))
-    # array[0] = pattern1
-
-    array = np.empty(elements, dtype=object)
-    for i in range(elements):
-        array[i] = np.random.random(features)
-
-    start = timer()
-
-    mymap.learn(array, cycles, multithreading, learning_rate)
-
-    end = timer()
-    print("Learning time: %s seconds" %(end - start))
-    print_map(mymap)
-    print("Program finished")
-
-def convert_map_to_array(mymap):
-    height = mymap.rows
-    width = mymap.cols
-    features = mymap.features_number
-    array = np.zeros((height, width, 3), dtype=np.uint8)
-    for i in range(height):
-        for j in range(width):
-            if features == 3: 
-                array[i,j] = mymap.neurons[i][j].return_weights_as_vector() * 255
-            else:
-                mean = np.mean(mymap.neurons[i][j].return_weights_as_vector())
-                array[i,j] = np.array((mean, mean, mean)) * 255
-    return array
-
-def print_map(mymap):
-    img = convert_map_to_array(mymap)
-    img = Image.fromarray(img, 'RGB')
-    # img.save('my.png')
-    img.show()
+    plt.plot(x,y)
+    plt.title("Loading %s images time" % len(inputs_mt))
+    plt.ylabel("Time in seconds")
+    plt.xlabel("Number of threads")
+    plt.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
     main()

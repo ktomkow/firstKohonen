@@ -114,3 +114,6 @@ senderAddress.txt
 # images
 my.png
 *_map.txt
+*.ppm
+
+Images
