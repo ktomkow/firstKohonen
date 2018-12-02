@@ -9,42 +9,44 @@ from matplotlib import pyplot as plt
 def main():
     print("Program started")
 
-    path = './Images/**/*.ppm'
-    inputs_mt = ig.get_all_images_vectors_mt(path, 44)
-    ig.save_inputs_to_json(inputs_mt)
-    print(len(inputs_mt))
+    # path = './Images/**/*.ppm'
+    # inputs_mt = ig.get_all_images_vectors_mt(path, 44)
+    # ig.save_inputs_to_json(inputs_mt)
+    # print(len(inputs_mt))
 
-    inputs = ig.load_inputs_from_json()
-    print(len(inputs))
-
+    # inputs = ig.load_inputs_from_json()
+    # print(len(inputs))
+    neural_network_test()
     print("Program finished")
 
 
 def neural_network_test():
-    rows = 20
-    cols = 20
+    rows = 10
+    cols = 10
     features = 3
-    elements = 12
+    elements = 2
     cycles = 1000
-    learning_rate = 0.3
+    learning_rate = 0.2
+    number_of_classes = elements
 
-    inputs = np.random.random((elements,features))
+    #inputs = np.random.random((elements,features))
+
+    inputs = np.array(([1,0,0],[0,0,1]))
 
     newmap = NewNeuralMap(rows, cols, features)
 
     start = timer()
     print("Learning..")
-    newmap.learn(inputs, cycles, learning_rate)
+    # newmap.learn(inputs, cycles, learning_rate)
+    newmap = NewNeuralMap.read_from_file()
     end = timer()
     print("Learning time: %s seconds" %(end - start))
 
-    start = timer()
-    newmap.print()
+    # newmap.print()
 
-    end = timer()
+    newmap.build_classificator(number_of_classes)
 
-    print("Printing new map time: %s seconds" %(end - start))
-    newmap.safe_to_file()
+    # newmap.safe_to_file()
 
 
 def images_loading_test(min_threads = 4, max_threads = 1024):

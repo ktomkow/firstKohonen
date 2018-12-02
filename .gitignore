@@ -117,3 +117,5 @@ my.png
 *.ppm
 *_inputs.txt
 Images
+
+*test*

@@ -5,7 +5,8 @@ from PIL import Image
 from random import randint
 import threading
 import jsonpickle
-
+import sklearn
+from sklearn import cluster
 
 class NewNeuralMap:
     def __init__(self, rows, cols, features):
@@ -39,15 +40,123 @@ class NewNeuralMap:
 
     
     def create_classes_array(self):
-        array = np.zeros((self.rows, self.cols)) - 1
+        array = np.zeros((self.rows, self.cols))
         return array
 
 
     def build_classificator(self, number_of_classes):
         self.number_of_classes = number_of_classes
-        centroids = np.array((self.number_of_classes, 2))
+        n3 = 0
+        n5 = 0
+        n8 = 0
+        #  self.classes
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.classes[i,j] != 0:
+                    neuron_position = np.array((i,j))
+                    neighbors = self.get_neighbors(i, j)
+                    # print(neighbors)
+                    if len(neighbors) == 3:
+                        n3 += 1
+                    if len(neighbors) == 5:
+                        n5 += 1
+                    if len(neighbors) == 8:
+                        n8 += 1
+
+        print("n3: %s" % n3)
+        print("n5: %s" % n5)
+        print("n8: %s" % n8)
+        print("together: %s" % str(n3 + n5 + n8))
 
 
+    def row_out_of_range(self, row):
+        if row < 0:
+            return True
+        if row > self.rows - 1:
+            return True
+        return False
+
+    def col_out_of_range(self, col):
+        if col < 0:
+            return True
+        if col > self.cols - 1:
+            return True
+        return False
+
+    def get_neighbors(self, row, col): # it works!
+        neighbors = []
+        i = row - 1
+        while i <= row + 1:
+            j = col - 1
+            while j <= col + 1:
+                if not (i == row and j == col):
+                    if not (self.row_out_of_range(i) or self.col_out_of_range(j)):
+                        neighbors.append((i,j))
+                j += 1
+            i += 1
+        return neighbors
+
+    def get_neighbors_original(self, row, col): # should work
+        neighbors = []
+        i = row - 1
+        if row != 0 and row != self.rows -1 and col != 0 and col != self.cols - 1: # normal situation
+            while i <= row + 1:
+                j = col - 1
+                while j <= col + 1:
+                    if not (i == row and j == col):
+                        neighbors.append((i, j))
+                    j += 1
+                i += 1
+        
+        if row == 0 and col != 0 and col != self.cols - 1: # first row
+            neighbors.append((row, col - 1))
+            neighbors.append((row, col + 1))
+            neighbors.append((row + 1, col - 1))
+            neighbors.append((row + 1, col))
+            neighbors.append((row + 1, col + 1))
+
+        if row == self.rows - 1 and col != 0 and col != self.cols - 1: # last row
+            neighbors.append((row, col - 1))
+            neighbors.append((row, col + 1))
+            neighbors.append((row - 1, col - 1))
+            neighbors.append((row - 1, col))
+            neighbors.append((row - 1, col + 1))
+
+        if col == 0 and row != 0 and row != self.rows - 1: # first col
+            neighbors.append((row - 1, col))
+            neighbors.append((row - 1, col + 1))
+            neighbors.append((row, col + 1))
+            neighbors.append((row + 1, col))
+            neighbors.append((row + 1, col + 1))
+
+        if col == self.cols - 1 and row != 0 and row != self.rows - 1: # last col
+            neighbors.append((row - 1, col - 1))
+            neighbors.append((row - 1, col))
+            neighbors.append((row, col - 1))
+            neighbors.append((row + 1, col - 1))
+            neighbors.append((row + 1, col))
+
+        if row == 0 and col == 0: # up left corner
+            neighbors.append((row, col + 1))
+            neighbors.append((row + 1, col))
+            neighbors.append((row + 1, col + 1))
+
+        if row == 0 and col == self.cols -1: # up right corner
+            neighbors.append((row, col - 1))
+            neighbors.append((row + 1, col))
+            neighbors.append((row + 1, col - 1))
+
+        if row == self.rows - 1 and col == 0: # down left corner
+            neighbors.append((row, col + 1))
+            neighbors.append((row - 1, col))
+            neighbors.append((row - 1, col + 1))
+            
+        if row == self.rows - 1 and col == self.cols - 1: # down right corner
+            neighbors.append((row, col - 1))
+            neighbors.append((row - 1, col))
+            neighbors.append((row - 1, col - 1))
+
+        return neighbors
 
     def learn_mt(self, inputs_array, cycles, learning_rate = 0.01):
         bar = self.bar_create()
