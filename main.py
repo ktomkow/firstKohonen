@@ -21,31 +21,33 @@ def main():
 
 
 def neural_network_test():
-    rows = 10
-    cols = 10
+    rows = 15
+    cols = 15
     features = 3
-    elements = 2
-    cycles = 1000
+    elements = 4
+    cycles = 3000
     learning_rate = 0.2
     number_of_classes = elements
 
-    #inputs = np.random.random((elements,features))
+    inputs = np.random.random((elements,features))
 
-    inputs = np.array(([1,0,0],[0,0,1]))
+    # inputs = np.array(([1,0,0],[0,0,1]))
 
     newmap = NewNeuralMap(rows, cols, features)
 
     start = timer()
     print("Learning..")
-    # newmap.learn(inputs, cycles, learning_rate)
-    newmap = NewNeuralMap.read_from_file()
+    newmap.learn(inputs, cycles, learning_rate)
+    
     end = timer()
     print("Learning time: %s seconds" %(end - start))
 
-    # newmap.print()
+    # newmap = NewNeuralMap.read_from_file()
+
 
     newmap.build_classificator(number_of_classes)
 
+    newmap.print()
     # newmap.safe_to_file()
 
 

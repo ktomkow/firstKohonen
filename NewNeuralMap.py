@@ -49,25 +49,88 @@ class NewNeuralMap:
         n3 = 0
         n5 = 0
         n8 = 0
-        #  self.classes
+        max_diff = 0.01
+        self.classes = self.create_classes_array()
+
+        # step 1 - finding really similar neurons right next to neuron and group them
+
         for i in range(self.rows):
             for j in range(self.cols):
-                if self.classes[i,j] != 0:
+                if self.classes[i,j] == 0:
                     neuron_position = np.array((i,j))
                     neighbors = self.get_neighbors(i, j)
-                    # print(neighbors)
-                    if len(neighbors) == 3:
-                        n3 += 1
-                    if len(neighbors) == 5:
-                        n5 += 1
-                    if len(neighbors) == 8:
-                        n8 += 1
+                    n = 0
+                    for k in range(len(neighbors)):
+                        difference = np.linalg.norm(self.neurons[i,j] - self.neurons[(neighbors[k][0]),(neighbors[k][1])])
+                        if difference <= max_diff:
+                            n += 1
 
-        print("n3: %s" % n3)
-        print("n5: %s" % n5)
-        print("n8: %s" % n8)
-        print("together: %s" % str(n3 + n5 + n8))
+                    if n >= len(neighbors) * 0.5:
+                        neighbors_classes = []
+                        for k in range(len(neighbors)):
+                            if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
+                                neighbors_classes.append(self.classes[(neighbors[k][0]),(neighbors[k][1])])
 
+                        how_many_different_classes = len(set(neighbors_classes))
+
+                        if how_many_different_classes == 1:
+                            c = set(neighbors_classes).pop()
+                            self.classes[i,j] = c
+                            for k in range(len(neighbors)):
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = c
+
+                        if how_many_different_classes == 0:
+                            c = np.max(self.classes) + 1
+                            self.classes[i,j] = c
+                            for k in range(len(neighbors)):
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = c
+
+        #step 1 completed
+        self.print_classes()
+        #step 2 k nearest neighbors - find all neighbors of a neuron and classify it to the same class as most of the neurons
+        while self.number_of_unclassified_neurons() != 0:
+        # for l in range(3):
+            class_proposal = self.create_classes_array()
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i,j] == 0:
+                        neuron_position = np.array((i,j))
+                        neighbors = self.get_neighbors(i, j)
+                        how_many_different_classes = len(set(neighbors_classes))
+                        neighbors_classes = []
+                        for k in range(len(neighbors)):
+                            if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
+                                neighbors_classes.append(self.classes[(neighbors[k][0]),(neighbors[k][1])])
+
+                        neighbors_classes = list(set(neighbors_classes))
+                        dictionary = {}
+                        for k in range(len(neighbors_classes)):
+                            dictionary[neighbors_classes[k]] = 0
+                        
+                        for k in range(len(neighbors)):
+                            neighbor_class = self.classes[(neighbors[k][0]),(neighbors[k][1])]
+                            if neighbor_class != 0:
+                                dictionary[neighbor_class] += 1
+            
+                        chosen_class = 0
+                        if len(dictionary) != 0: # if dictionary not empty
+                            chosen_class = max(dictionary.keys(), key=(lambda k: dictionary[k]))
+                            class_proposal[i,j] = chosen_class
+
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i,j] == 0:
+                        self.classes[i,j] = class_proposal[i,j]
+
+            self.print_classes()
+
+    def number_of_unclassified_neurons(self):
+        n = 0
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.classes[i,j] == 0:
+                    n += 1
+        return n
 
     def row_out_of_range(self, row):
         if row < 0:
@@ -96,67 +159,6 @@ class NewNeuralMap:
             i += 1
         return neighbors
 
-    def get_neighbors_original(self, row, col): # should work
-        neighbors = []
-        i = row - 1
-        if row != 0 and row != self.rows -1 and col != 0 and col != self.cols - 1: # normal situation
-            while i <= row + 1:
-                j = col - 1
-                while j <= col + 1:
-                    if not (i == row and j == col):
-                        neighbors.append((i, j))
-                    j += 1
-                i += 1
-        
-        if row == 0 and col != 0 and col != self.cols - 1: # first row
-            neighbors.append((row, col - 1))
-            neighbors.append((row, col + 1))
-            neighbors.append((row + 1, col - 1))
-            neighbors.append((row + 1, col))
-            neighbors.append((row + 1, col + 1))
-
-        if row == self.rows - 1 and col != 0 and col != self.cols - 1: # last row
-            neighbors.append((row, col - 1))
-            neighbors.append((row, col + 1))
-            neighbors.append((row - 1, col - 1))
-            neighbors.append((row - 1, col))
-            neighbors.append((row - 1, col + 1))
-
-        if col == 0 and row != 0 and row != self.rows - 1: # first col
-            neighbors.append((row - 1, col))
-            neighbors.append((row - 1, col + 1))
-            neighbors.append((row, col + 1))
-            neighbors.append((row + 1, col))
-            neighbors.append((row + 1, col + 1))
-
-        if col == self.cols - 1 and row != 0 and row != self.rows - 1: # last col
-            neighbors.append((row - 1, col - 1))
-            neighbors.append((row - 1, col))
-            neighbors.append((row, col - 1))
-            neighbors.append((row + 1, col - 1))
-            neighbors.append((row + 1, col))
-
-        if row == 0 and col == 0: # up left corner
-            neighbors.append((row, col + 1))
-            neighbors.append((row + 1, col))
-            neighbors.append((row + 1, col + 1))
-
-        if row == 0 and col == self.cols -1: # up right corner
-            neighbors.append((row, col - 1))
-            neighbors.append((row + 1, col))
-            neighbors.append((row + 1, col - 1))
-
-        if row == self.rows - 1 and col == 0: # down left corner
-            neighbors.append((row, col + 1))
-            neighbors.append((row - 1, col))
-            neighbors.append((row - 1, col + 1))
-            
-        if row == self.rows - 1 and col == self.cols - 1: # down right corner
-            neighbors.append((row, col - 1))
-            neighbors.append((row - 1, col))
-            neighbors.append((row - 1, col - 1))
-
-        return neighbors
 
     def learn_mt(self, inputs_array, cycles, learning_rate = 0.01):
         bar = self.bar_create()
@@ -282,6 +284,20 @@ class NewNeuralMap:
         print("Weights:")
         print(self.neurons)
 
+    
+    def print_classes(self):
+        max_class_number = np.max(self.classes)
+
+        array = np.zeros((self.rows, self.cols, 3), dtype=np.uint8)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                value = self.classes[i][j]
+                array[i,j] = np.array((value, value, value)) * 255 / (max_class_number + 1)
+
+        img = Image.fromarray(array, 'RGB')
+        img = img.resize((300,300))
+        img.show()
+
 
     def bar_create(self):
         bar = progressbar.ProgressBar(maxval=100, \
@@ -291,5 +307,3 @@ class NewNeuralMap:
 
     def bar_update(self, bar, percentage_done):
         bar.update(percentage_done)
-
-
