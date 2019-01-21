@@ -5,8 +5,8 @@ from PIL import Image
 from random import randint
 import threading
 import jsonpickle
-import sklearn
-from sklearn import cluster
+import math
+
 
 class NewNeuralMap:
     def __init__(self, rows, cols, features):
@@ -43,29 +43,28 @@ class NewNeuralMap:
         array = np.zeros((self.rows, self.cols))
         return array
 
+    def build_classificator_correct(self, wanted_number_of_classes, printing = False):
+        self.create_centers_of_classes(wanted_number_of_classes)   # done
+        self.classify_unclassified_neurons(False) # done 
 
-    def build_classificator(self, number_of_classes):
-        self.number_of_classes = number_of_classes
-        n3 = 0
-        n5 = 0
-        n8 = 0
-        max_diff = 0.01
+        self.decrease_number_of_classes(wanted_number_of_classes, printing) 
+
+        self.shuffle_classes() # done
+
+    def create_centers_of_classes(self, wanted_number_of_classes, max_diff = 0.001):
         self.classes = self.create_classes_array()
-
-        # step 1 - finding really similar neurons right next to neuron and group them
-
+        neighbors_classes = []
         for i in range(self.rows):
             for j in range(self.cols):
                 if self.classes[i,j] == 0:
-                    neuron_position = np.array((i,j))
                     neighbors = self.get_neighbors(i, j)
-                    n = 0
+                    numberOfSimilarNeurons = 0
                     for k in range(len(neighbors)):
                         difference = np.linalg.norm(self.neurons[i,j] - self.neurons[(neighbors[k][0]),(neighbors[k][1])])
                         if difference <= max_diff:
-                            n += 1
+                            numberOfSimilarNeurons += 1
 
-                    if n >= len(neighbors) * 0.5:
+                    if numberOfSimilarNeurons >= math.ceil(len(neighbors) * 0.7):
                         neighbors_classes = []
                         for k in range(len(neighbors)):
                             if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
@@ -75,28 +74,31 @@ class NewNeuralMap:
 
                         if how_many_different_classes == 1:
                             c = set(neighbors_classes).pop()
-                            self.classes[i,j] = c
+                            self.classes[i,j] = int(c)
                             for k in range(len(neighbors)):
-                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = c
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = int(c)
 
                         if how_many_different_classes == 0:
                             c = np.max(self.classes) + 1
-                            self.classes[i,j] = c
+                            self.classes[i,j] = int(c)
                             for k in range(len(neighbors)):
-                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = c
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = int(c)
 
-        #step 1 completed
-        self.print_classes()
-        #step 2 k nearest neighbors - find all neighbors of a neuron and classify it to the same class as most of the neurons
+
+        number_of_classes = np.max(self.classes)
+        if(number_of_classes < wanted_number_of_classes):
+            self.create_centers_of_classes(wanted_number_of_classes, max_diff + 0.001)
+        else:
+            return
+
+    def classify_unclassified_neurons(self, printing = False):
         while self.number_of_unclassified_neurons() != 0:
-        # for l in range(3):
             class_proposal = self.create_classes_array()
             for i in range(self.rows):
                 for j in range(self.cols):
                     if self.classes[i,j] == 0:
                         neuron_position = np.array((i,j))
                         neighbors = self.get_neighbors(i, j)
-                        how_many_different_classes = len(set(neighbors_classes))
                         neighbors_classes = []
                         for k in range(len(neighbors)):
                             if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
@@ -120,9 +122,190 @@ class NewNeuralMap:
             for i in range(self.rows):
                 for j in range(self.cols):
                     if self.classes[i,j] == 0:
-                        self.classes[i,j] = class_proposal[i,j]
+                        self.classes[i,j] = int(class_proposal[i,j])
 
+            if printing:
+                self.print_classes()
+
+    def decrease_number_of_classes(self, wanted_number_of_classes, printing = False):
+        while(self.get_number_of_classes() > wanted_number_of_classes):
+            actual_number_of_classes = self.get_number_of_classes()
+            min_difference = 99999999999
+            firstClassToMerge = 0
+            secondClassToMerge = 0
+            for i in range(actual_number_of_classes):
+                firstClassAverageNeuron = self.get_average_neuron_of_class(i)
+                if np.isnan(firstClassAverageNeuron).any():
+                    continue
+
+                for j in range(actual_number_of_classes):
+                    if(i == j or j == 0 or j == 0):
+                        continue
+
+                    secondClassAverageNeuron = self.get_average_neuron_of_class(j)
+                    if np.isnan(secondClassAverageNeuron).any():
+                        continue
+
+                    difference = np.linalg.norm(firstClassAverageNeuron - secondClassAverageNeuron) 
+                    difference = difference ** 2
+
+                    if difference < min_difference:
+                        min_difference = difference
+                        firstClassToMerge = i
+                        secondClassToMerge = j
+
+            self.merge_classes(firstClassToMerge, secondClassToMerge)
+            if(printing):
+                self.print_classes()
+
+    def get_number_of_classes(self):
+        return int(np.max(self.classes))
+
+
+    def merge_classes(self, classToMergeInto, classToRemove):
+        for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i,j] == classToRemove:
+                        self.classes[i,j] = classToMergeInto
+        self.move_classes(classToRemove)
+
+
+    def move_classes(self, removed_class):
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.classes[i,j] >= removed_class:
+                    self.classes[i,j] = self.classes[i,j] - 1
+
+
+    # deprecated
+    def build_classificator(self, number_of_classes, printing = False):
+        self.number_of_classes = number_of_classes
+        n3 = 0
+        n5 = 0
+        n8 = 0
+        max_diff = 0.08 # nice
+        self.classes = self.create_classes_array()
+        neighbors_classes = []
+        # step 1 - finding really similar neurons right next to neuron and group them
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.classes[i,j] == 0:
+                    neuron_position = np.array((i,j))
+                    neighbors = self.get_neighbors(i, j)
+                    # n = 0
+                    numberOfSimilarNeurons = 0
+                    for k in range(len(neighbors)):
+                        difference = np.linalg.norm(self.neurons[i,j] - self.neurons[(neighbors[k][0]),(neighbors[k][1])])
+                        if difference <= max_diff:
+                            # n += 1
+                            numberOfSimilarNeurons += 1
+
+                    # if n >= math.ceil(len(neighbors) * 0.7):
+                    if numberOfSimilarNeurons >= math.ceil(len(neighbors) * 0.7):
+                        neighbors_classes = []
+                        for k in range(len(neighbors)):
+                            if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
+                                neighbors_classes.append(self.classes[(neighbors[k][0]),(neighbors[k][1])])
+
+                        how_many_different_classes = len(set(neighbors_classes))
+
+                        if how_many_different_classes == 1:
+                            c = set(neighbors_classes).pop()
+                            self.classes[i,j] = c
+                            for k in range(len(neighbors)):
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = (int)(c)
+
+                        if how_many_different_classes == 0:
+                            c = np.max(self.classes) + 1
+                            self.classes[i,j] = c
+                            for k in range(len(neighbors)):
+                                self.classes[(neighbors[k][0]),(neighbors[k][1])] = (int)(c)
+
+        #step 1 completed
+        if printing:
             self.print_classes()
+        #step 2 k nearest neighbors - find all neighbors of a neuron and classify it to the same class as most of the neurons
+        while self.number_of_unclassified_neurons() != 0:
+        # for l in range(3):
+            class_proposal = self.create_classes_array()
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i,j] == 0:
+                        neuron_position = np.array((i,j))
+                        neighbors = self.get_neighbors(i, j)
+                        neighbors_classes = []
+                        for k in range(len(neighbors)):
+                            if self.classes[(neighbors[k][0]),(neighbors[k][1])] != 0:
+                                neighbors_classes.append(self.classes[(neighbors[k][0]),(neighbors[k][1])])
+
+                        neighbors_classes = list(set(neighbors_classes))
+                        dictionary = {}
+                        for k in range(len(neighbors_classes)):
+                            dictionary[neighbors_classes[k]] = 0
+                        
+                        for k in range(len(neighbors)):
+                            neighbor_class = self.classes[(neighbors[k][0]),(neighbors[k][1])]
+                            if neighbor_class != 0:
+                                dictionary[neighbor_class] += 1
+            
+                        chosen_class = 0
+                        if len(dictionary) != 0: # if dictionary not empty
+                            chosen_class = max(dictionary.keys(), key=(lambda k: dictionary[k]))
+                            class_proposal[i,j] = chosen_class
+
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i,j] == 0:
+                        self.classes[i,j] = (int)(class_proposal[i,j])
+
+            if printing:
+                self.print_classes()
+
+        self.shuffle_classes()
+    
+
+    def shuffle_classes(self):
+        number_of_classes = np.max(self.classes)
+        for k in range((int)(number_of_classes)):
+
+            row = randint(0, self.rows - 1)
+            col = randint(0, self.cols - 1)
+            class_of_first_random_neuron = self.classes[row, col]
+            class_of_second_random_neuron = class_of_first_random_neuron
+
+            while class_of_second_random_neuron == class_of_first_random_neuron:
+                row = randint(0, self.rows - 1)
+                col = randint(0, self.cols - 1)
+                class_of_second_random_neuron = self.classes[row, col]
+            
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    if self.classes[i, j] == class_of_first_random_neuron:
+                        self.classes[i, j] = class_of_second_random_neuron
+
+                    elif self.classes[i, j] == class_of_second_random_neuron:
+                        self.classes[i, j] = class_of_first_random_neuron
+
+
+    def get_neurons_of_class(self, looking_class):
+        neurons = []
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.classes[i,j] == looking_class:
+                    neurons.append((i,j))
+        return neurons
+
+    # TODO
+    def get_average_neuron_of_class(self, looking_class):
+        average_neuron = np.zeros(self.features_number)
+        neurons = self.get_neurons_of_class(looking_class)
+        number_of_neurons = len(neurons)
+        for i in range(number_of_neurons):
+            current_neuron = self.neurons[neurons[i][0], neurons[i][1]]
+            average_neuron = average_neuron + current_neuron
+        return average_neuron/float(number_of_neurons)
+
 
     def number_of_unclassified_neurons(self):
         n = 0
@@ -212,7 +395,7 @@ class NewNeuralMap:
 
     def learn(self, inputs_array, cycles, learning_rate = 0.01):
         learning_rate = self.check_learning_rate(learning_rate)
-        print("Learning in %s cycles with %s learning rate" % (cycles, learning_rate))
+        print("Learning in %s cycles with learning rate: %s" % (cycles, learning_rate))
         bar = self.bar_create()
         bar.update(0)
         for i in range(cycles):
@@ -297,7 +480,6 @@ class NewNeuralMap:
         img = Image.fromarray(array, 'RGB')
         img = img.resize((300,300))
         img.show()
-
 
     def bar_create(self):
         bar = progressbar.ProgressBar(maxval=100, \
