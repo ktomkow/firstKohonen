@@ -43,7 +43,7 @@ class NewNeuralMap:
         array = np.zeros((self.rows, self.cols))
         return array
 
-    def build_classificator_correct(self, wanted_number_of_classes, printing = False):
+    def build_classifier(self, wanted_number_of_classes, printing = False):
         self.create_centers_of_classes(wanted_number_of_classes)   # done
         self.classify_unclassified_neurons(False) # done 
 
@@ -342,46 +342,6 @@ class NewNeuralMap:
             i += 1
         return neighbors
 
-
-    def learn_mt(self, inputs_array, cycles, learning_rate = 0.01):
-        bar = self.bar_create()
-        bar.update(0)
-        cycle_number = 0
-        learning_rate = self.check_learning_rate(learning_rate)
-        for i in range(cycles):
-            percentage_done = (i/(cycles-1))*100
-            bar.update(percentage_done)
-            input_vector = inputs_array[randint(0, inputs_array.shape[0] - 1),:]
-            winner_position = self.get_winner_neuron(input_vector)
-
-            start = timer()
-
-            threads = []
-            number_of_threads = 4
-            rows_in_thread = (int)(self.rows/number_of_threads)
-            first_row = 0
-            last_row = 0
-            for i in range(number_of_threads):
-                first_row = last_row
-                last_row = first_row + rows_in_thread
-                if i == number_of_threads - 1:
-                    last_row = self.rows
-                
-                t = threading.Thread(target=self.cycles, args=(first_row, last_row, winner_position, input_vector, learning_rate))
-                threads.append(t)
-                t.start()
-                
-            for i in range(number_of_threads):
-                threads[i].join()
-
-            end = timer()
-            self.changin_time +=  end - start
-
-        print()
-        print("Getting winner time: %s seconds" %(self.getting_winner_time))    
-        print("Changing weights time: %s seconds" %(self.changin_time))
-
-
     def cycles(self, first_row, last_row, winner_position, input_vector, learning_rate):
         j = first_row
         while j < last_row:
@@ -436,6 +396,11 @@ class NewNeuralMap:
         end = timer()
         self.getting_winner_time += end-start
         return np.array((row, col))
+
+
+    def get_winner_class(self, input_vector):
+        winner_neuron = self.get_winner_neuron(input_vector)
+        return self.classes[winner_neuron[0], winner_neuron[1]]
 
     def check_learning_rate(self, learning_rate):
         if learning_rate > 0:
