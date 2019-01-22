@@ -1,4 +1,3 @@
-from Neuron import Neuron
 from NewNeuralMap import NewNeuralMap
 import numpy as np
 from PIL import Image
