@@ -10,17 +10,19 @@ import ImageProcessor as ip
 
 def main():
     print("Program started")
-    myNewMain()
+    # Images()
+    # Demo()
+    # images_loading_test()
     print("Program finished")
 
 
-def myNewMain():    # for images
+def Images():    # for images
     rows = 32
     cols = 32
     features = 1024
     number_of_classes = 5
 
-    load_map_from_file = True
+    load_map_from_file = False
     learn_map = False
     build_classifier = False
     save_map_to_file = False
@@ -95,61 +97,64 @@ def load_map_from_file_func(path):
     return neural_map
 
 
-def neural_network_test():
-    rows = 32
-    cols = 32
+def Demo():
+    read_from_file = True
+
+    rows = 30
+    cols = 30
     features = 3
-    elements = 5
     cycles = 1500
     learning_rate = 1
     number_of_classes = 3
 
-    filename = "testmap.txt"
+    filename = "demomap2.txt"
 
-    # inputs = np.random.random((elements,features))
+    if read_from_file:
+        print("Reading map from file")
+        newmap = NewNeuralMap.read_from_file(filename)
+    else:
+        inputs = np.array(([0.93, 0.93, 0.99], [0.6, 0.6, 0.6], [0.1, 0.1, 0.1]))
+        inputs = np.vstack((inputs, [0.92, 0.94, 0.89]))
+        inputs = np.vstack((inputs, [0.94, 0.88, 0.89]))
+        inputs = np.vstack((inputs, [0.89, 0.98, 0.91]))
 
-    inputs = np.array(([1, 0, 0], [0, 0, 1], [0, 1, 0]))
+        inputs = np.vstack((inputs, [0.64, 0.66, 0.56]))
+        inputs = np.vstack((inputs, [0.60, 0.66, 0.59]))
+        inputs = np.vstack((inputs, [0.69, 0.64, 0.62]))
 
-    inputs = np.vstack((inputs, [0.9, 0.1, 0.1]))
-    inputs = np.vstack((inputs, [0.8, 0.15, 0.15]))
-    inputs = np.vstack((inputs, [0.8, 0.2, 0.2]))
+        inputs = np.vstack((inputs, [0.09, 0.12, 0.15]))
+        inputs = np.vstack((inputs, [0.11, 0.11, 0.11]))
+        inputs = np.vstack((inputs, [0.13, 0.13, 0.12]))
 
-    inputs = np.vstack((inputs, [0.1, 0.9, 0.1]))
-    inputs = np.vstack((inputs, [0.15, 0.8, 0.15]))
-    inputs = np.vstack((inputs, [0.2, 0.8, 0.2]))
+        newmap = NewNeuralMap(rows, cols, features)
 
-    inputs = np.vstack((inputs, [0.1, 0.1, 0.9]))
-    inputs = np.vstack((inputs, [0.15, 0.15, 0.8]))
-    inputs = np.vstack((inputs, [0.2, 0.2, 0.8]))
+        start = timer()
+        print("Learning..")
 
-    newmap = NewNeuralMap(rows, cols, features)
+        cycles = 1000
+        learning_rate = 1
+        newmap.learn(inputs, cycles, learning_rate)
+        cycles = 2000
+        learning_rate = 0.8
+        newmap.learn(inputs, cycles, learning_rate)
+        cycles = 3000
+        learning_rate = 0.4
+        newmap.learn(inputs, cycles, learning_rate)
 
-    # print(inputs)
+        end = timer()
+        time_seconds = end - start
 
-    # start = timer()
-    # print("Learning..")
+        print("Learning time: " + str(datetime.timedelta(seconds=time_seconds)))
 
-    # cycles = 1000
-    # learning_rate = 1
-    # newmap.learn(inputs, cycles, learning_rate)
-    # cycles = 5000
-    # learning_rate = 0.4
-    # newmap.learn(inputs, cycles, learning_rate)
+        newmap.safe_to_file(filename)
 
-    # end = timer()
-    # print("Learning time: %s seconds" %(end - start))
-    # newmap.safe_to_file(filename)
-
-    newmap = NewNeuralMap.read_from_file(filename)
-
-    newmap.build_classifier(number_of_classes + 2, True)
+    newmap.build_classifier(number_of_classes, True)
     newmap.print()
     newmap.print_classes()
 
     number_of_classes = np.max(newmap.classes)
     print("Found %s classes" % number_of_classes)
     # newmap.print_classes()
-    # newmap.safe_to_file(filename)
 
 
 def images_loading_test(min_threads=35, max_threads=50):

@@ -45,7 +45,7 @@ class NewNeuralMap:
 
     def build_classifier(self, wanted_number_of_classes, printing = False):
         self.create_centers_of_classes(wanted_number_of_classes)   # done
-        self.classify_unclassified_neurons(False) # done 
+        self.classify_unclassified_neurons(printing) # done 
 
         self.decrease_number_of_classes(wanted_number_of_classes, printing) 
 
@@ -296,7 +296,7 @@ class NewNeuralMap:
                     neurons.append((i,j))
         return neurons
 
-    # TODO
+
     def get_average_neuron_of_class(self, looking_class):
         average_neuron = np.zeros(self.features_number)
         neurons = self.get_neurons_of_class(looking_class)
